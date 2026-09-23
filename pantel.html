@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Volei Pro - Infantis e Iniciadas</title>
+    <title>Volei Pro - Infantis A</title>
     <!-- Configuração para o WhatsApp -->
-    <meta property="og:title" content="Volei Pro - Infantis e Iniciadas">
+    <meta property="og:title" content="Volei Pro - Infantis A">
     <meta property="og:description" content="Plataforma de Gestão Tática e Estatística em Tempo Real (Motor DataVolley).">
     <meta property="og:type" content="website">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -152,7 +152,7 @@
 </div>
 
 <header>
-    <h1 id="main-header-title">Infantis / Iniciadas - GESTÃO</h1>
+    <h1 id="main-header-title">Infantis A - GESTÃO</h1>
     <div id="sync-status" style="display:none; font-size: 0.5rem; color: var(--success); text-align: center;">● LIVE SYNC ATIVO (FIREBASE)</div>
 </header>
 
@@ -171,7 +171,7 @@
         <input type="text" id="adv-name" placeholder="Ex: SC Braga" onchange="sync()">
 
         <label>Prova / Torneio</label>
-        <input type="text" id="game-name" value="Campeonato Regional FPV - Infantis/Iniciadas" onchange="sync()">
+        <input type="text" id="game-name" value="Campeonato Regional FPV - Infantis A" onchange="sync()">
         
         <label>Local / Pavilhão</label>
         <select id="pavilion-select" onchange="toggleOtherPavilion()">
@@ -191,7 +191,7 @@
     <div id="athlete-list"></div>
 
     <div class="game-info-card" style="margin-top: 20px; border-style: dashed;">
-        <label>Adicionar Atleta ao Plantel (9 a 12)</label>
+        <label>Adicionar Atleta ao Plantel</label>
         <div style="display:flex; flex-direction:column; gap:6px; margin-top:5px;">
             <div style="display:flex; gap:5px;">
                 <input type="number" id="new-ath-num" placeholder="Nº" style="flex:1; margin:0;">
@@ -410,21 +410,17 @@
     const db = getFirestore(app);
 
     let state = { 
-        conv: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 
+        conv: [], 
         sets: {}, 
         advName: "ADV", 
         logs: [], 
-        gameName: "Campeonato Regional FPV - Infantis/Iniciadas", 
+        gameName: "Campeonato Regional FPV - Infantis A", 
         gameDate: "31/05/2026", 
         gameTime: "16H", 
         pavilion: "ES ALCAIDES FARIA", 
         otherPavilion: "",
-        roles: { 1: "PAS", 2: "PAS", 3: "ENT", 4: "ENT", 5: "ENT", 6: "ENT", 7: "OPO", 8: "CEN", 9: "CEN", 10: "CEN" },
-        atletas: [
-            {n: 1, nome: "Zita Macedo"}, {n: 2, nome: "Maria Luisa Baptista"}, {n: 3, nome: "Carla Rodriguez"},
-            {n: 4, nome: "Barbara Fernandes"}, {n: 5, nome: "Beatriz Brito"}, {n: 6, nome: "Matilde Loureiro"},
-            {n: 7, nome: "Maria Luisa Soutelo"}, {n: 8, nome: "Nataliia Karpets"}, {n: 9, nome: "Carolina Braga"}, {n: 10, nome: "Clara Pires"}
-        ],
+        roles: {},
+        atletas: [],
         scoutData: {} 
     };
 
@@ -507,6 +503,9 @@
         if(snap.exists()) {
             state = { ...state, ...snap.data() };
             if (!state.scoutData) state.scoutData = {};
+            if (!state.atletas) state.atletas = [];
+            if (!state.conv) state.conv = [];
+            if (!state.roles) state.roles = {};
             
             document.getElementById('sync-status').style.display = 'block';
             document.getElementById('adv-name').value = state.advName || "";
@@ -1043,7 +1042,7 @@
             if (posicaoBloqueada || maxSubsAtingido) {
                 let razaoText = posicaoBloqueada 
                     ? "Regra FPV: O titular já regressou ou a substituição foi usada." 
-                    : "Regra FPV (Infantis/Iniciadas): Limite de 1 substituição regular por set atingido.";
+                    : "Regra FPV (Infantis A): Limite de 1 substituição regular por set atingido.";
 
                 container.innerHTML += `
                     <p style="font-size:0.7rem; color:var(--accent); text-align:center; font-weight:bold; padding: 10px; background: rgba(244, 63, 94, 0.1); border-radius: 8px; border: 1px solid var(--accent); margin-bottom:5px;">
@@ -1229,7 +1228,7 @@
     }
     
     function render() {
-        document.getElementById('athlete-list').innerHTML = state.atletas.sort((a,b)=>a.n-b.n).map(a => `
+        document.getElementById('athlete-list').innerHTML = (state.atletas || []).sort((a,b)=>a.n-b.n).map(a => `
             <div class="athlete-card">
                 <div style="display:flex; flex-direction:column; gap:2px; flex:1;">
                     <div style="display:flex; align-items:center; gap:6px;">
@@ -1251,7 +1250,7 @@
                     <button class="btn-action-icon btn-remove" onclick="removeAthlete(${a.n})">×</button>
                 </div>
             </div>
-        `).join('');
+        `).join('') || "<p style='text-align:center; color:var(--gray-light); font-size:0.8rem; grid-column: 1/-1;'>Nenhuma atleta cadastrada. Use o campo abaixo para adicionar.</p>";
 
         document.getElementById('sets-container').innerHTML = [1,2,3,4,5].map(s => {
             const res = validarSet(s); const convocadas = state.atletas.filter(a => state.conv.includes(a.n)).sort((a,b)=>a.n-b.n); const usadasNesteSet = [1,2,3,4,5,6].map(p => state.sets[`s${s}p${p}`]).filter(v => v);
